@@ -1,0 +1,14 @@
+build/
+*.o
+*.a
+*.so
+*.gcda
+*.gcno
+*.gcov
+coverage.info
+coverage_filtered.info
+coverage_report/
+*.swp
+*.swo
+*~
+.DS_Store

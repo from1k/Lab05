@@ -1,0 +1,35 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: sudo apt-get install -y lcov
+
+    - name: Configure CMake
+      run: cmake -B build -DENABLE_COVERAGE=ON -DBUILD_TESTS=ON
+
+    - name: Build
+      run: cmake --build build --parallel $(nproc)
+
+    - name: Run tests
+      working-directory: build
+      run: ctest --output-on-failure
+
+    - name: Collect coverage
+      working-directory: build
+      run: |
+        lcov --capture --directory . --output-file coverage.info --ignore-errors mismatch,unused,empty
+        lcov --extract coverage.info '*/Account.cpp' '*/Transaction.cpp' --output-file coverage_filtered.info --ignore-errors unused
+
+    - name: Upload to Coveralls
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/coverage_filtered.info
